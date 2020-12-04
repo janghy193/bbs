@@ -8,9 +8,12 @@
 <title>WEB BBS</title>
 <style>
 .subj{
-width:60%;}
-table th,td{
+width:55%;}
+th,td{
 text-align:center;
+}
+td.subj{
+text-align:left;
 }
 .container p{
 text-align:right;
@@ -24,7 +27,12 @@ position:relative;
 right:0px;
 }
 #search{
-text-align:center;}
+text-align:center;
+}
+#snum{
+color:gray;
+font-size:small;
+}
 </style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -38,36 +46,40 @@ text-align:center;}
 	
 </script>
 <script>
-$(function(){
-	if($('#tLink').text()==null)$('#tLink').text("---");
-})
 function writePage(){
 	location.href="/bbs/write";
 }
+
 function search(){
 	if($("#searchVal").val()==""){
 		location.href="/bbs/page/1"
 	}else{
 		location.href="/bbs/search/"+$("#searchKey").val()+"/"+$("#searchVal").val()+"/";	
 	}
-	
-	
 }
 </script>
 </head>
 <body>
+<br>
 <div class="container">
 	<table class="table">
 		<tr class="thead-dark"><th></th><th>글번호</th><th class = "subj">제목</th><th>작성자</th><th>작성일</th><th>조회수</th></tr>
-		<c:forEach var="b" items="${pageInfo.list}">
-		<a href= "/bbs/read/${b.num}"><tr><td>${b}</td><td><a href="/bbs/read/${b.num}">${b.num}</a></td>
-		<td><a href="/bbs/read/${b.num}" id = "tLink">${b.title}</a></td>
-		<td>${b.author}</td><td>${b.wdate}</td><td>${b.hit}</td></tr>
+		<c:forEach var="b" items="${pageInfo.list}" varStatus="status">
+		<c:if test="${b.pnum==0}">
+			<tr><td id = "snum">${status.count}</td><td>${b.num}</td>
+			<td class="subj"><a href="/bbs/read/${b.num}">${b.title}</a></td>
+			<td>${b.author}</td><td>${b.wdate}</td><td>${b.hit}</td></tr>
+		</c:if>
+		<c:if test="${b.pnum!=0}">
+			<tr><td id = "snum">${status.count}</td><td></td>
+			<td class = "subj">ㄴ<a href="/bbs/read/${b.num}" id = "tLink">${b.title}</a></td>
+			<td>${b.author}</td><td>${b.wdate}</td><td>${b.hit}</td></tr>
+		</c:if>
 		</c:forEach>
 		<c:forEach var="b" items="${list}">
 		<tr><td><a href="/bbs/read/${b.num}">${b.num}</a></td>
 		<td><a href="/bbs/read/${b.num}" id = "tLink">${b.title}</a></td>
-		<td>${b.author}</td><td>${b.wdate}</td><td>${b.hit}</td></tr></a>
+		<td><a href="/bbs/search/author/${b.author}/">{b.author}</a></td><td>${b.wdate}</td><td>${b.hit}</td></tr></a>
 		</c:forEach>			
 	</table>
 	<span class = "paginations">

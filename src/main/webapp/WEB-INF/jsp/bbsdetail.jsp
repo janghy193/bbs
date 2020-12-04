@@ -110,7 +110,7 @@ function download(f){
 	location.href = "/download/"+f;
 }
 function toList(){
-	location.href = "../page/1";
+	location.href = "../page/"+`${page}`;
 }
 function rewrite(){
 	location.href = "/bbs/rewrite/"+`${num}`;
@@ -120,20 +120,24 @@ function rewrite(){
 <body>
 <div class="form-group">
 <output class="badge badge-dark" id = "num"></output> <span class = "titles"><label for = "title">제목</label><input id = "title" name = "title" readonly></span>
-<span class="authors"><label for = "author">작성자: </label><output id = "author"></output></span>
+<span class="authors"><label for = "author">작성자 : </label> <output id = "author"></output></span>
 <output class="badge badge-info" id = "hit"></output><br>
 <textarea class="form-control" rows="5" id = "contents" name = "contents" readonly></textarea><br>
+
       <p><a class="btn btn-light" href="javascript:toList()">목록보기</a> 
       <button class="btn btn-dark" onclick="rewrite()">답글 달기</button>  
-      <button class="btn btn-dark" onclick="update()">수정</button>      
+      <button class="btn btn-dark" id = "updbtn" onclick="update()">수정</button>      
       <button class="btn btn-secondary" onclick="del()">삭제</button></p>
       
       <label for="files">첨부파일</label> <span> ${fileNone} </span><br> 
       <c:forEach var = "f" items = "${attlist}">
       <span>${f.filename}</span>
       <button class="btn btn-dark" id = "downbtn" onclick="download('${f.filename}')">다운로드</button><br>
-      </c:forEach> 
-<p><p>
+      </c:forEach> <br>
+      <p>
+      이전게시물: <a href="/bbs/read/${prev.num}">${prev.title}</a><br>
+      다음게시물: <a href="/bbs/read/${next.num}">${next.title}</a>
+      </p>
 </div>
 </body>
 </html>

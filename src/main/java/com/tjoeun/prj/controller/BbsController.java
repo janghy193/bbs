@@ -18,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -46,13 +47,35 @@ public class BbsController {
 	
 	@GetMapping("/bbs/read/{num}")
 	public String selectByNum(@PathVariable("num") int num, Model model) {
-		ArrayList<AttachmentVO> attlist = attMapper.getFileList(num);
+		ArrayList<AttachmentVO> attlist = attMapper.getFileList(num); 	// 첨부파일 리스트
 		BbsVO bb = bbsMapper.selectByNum(num);
-		bb.setHit(bb.getHit()+1);
+		
+		bb.setHit(bb.getHit()+1);	// 조회수 증가
 		bbsMapper.updateBbs(bb);
+		
+		ArrayList<BbsVO> list = bbsMapper.getBbsList();
+		resort(list);
+		int page = 0; // 현재 페이지 계산용
+		
+		BbsVO prev = new BbsVO(); // 이전페이지, 다음페이지 정보 저장
+		BbsVO next = new BbsVO();
+		for(int i = 0 ; i < list.size() ; i++) {
+			if(list.get(i).getNum()==num) {
+				page = ((i+1) % rows == 0) ? ((i+1) / rows) : ((i+1) / rows + 1) ; // 현재 페이지 계산
+				if(i-1>0) {
+					prev = list.get(i-1);	// 이전글 정보 저장
+				}
+				if(i+1<list.size()) {
+					next = list.get(i+1);	// 다음글 정보 저장
+				}
+			}
+		}
 		
 		model.addAttribute("attlist",attlist);
 		model.addAttribute("bbs", bb);
+		model.addAttribute("page",page);
+		model.addAttribute("prev",prev);
+		model.addAttribute("next",next);
 		
 		return "bbsdetail";
 	}
@@ -60,9 +83,25 @@ public class BbsController {
 	@GetMapping("/bbs")
 	public String getBbsList(Model model) {
 		PageHelper.startPage(1, rows);
-		PageInfo<BbsVO> pageInfo = new PageInfo<>(bbsMapper.getBbsList());
-
+		ArrayList<BbsVO> list = bbsMapper.getBbsList();
+		resort(list);
+		
+		PageInfo<BbsVO> pageInfo = new PageInfo<>(list);
+		
 		model.addAttribute("pageInfo", pageInfo);
+		return "bbslist";
+	}
+
+	@GetMapping("/bbs/page/{num}")
+	public String getUserListPage(@PathVariable int num, Model model) {
+		PageHelper.startPage(num, rows);
+		ArrayList<BbsVO> list = bbsMapper.getBbsList();
+		resort(list);
+		
+		PageInfo<BbsVO> pageInfo = new PageInfo<>(list);
+		
+		model.addAttribute("pageInfo", pageInfo);
+		
 		return "bbslist";
 	}
 
@@ -79,25 +118,17 @@ public class BbsController {
 
 	@ResponseBody
 	@PutMapping("/bbs/upd")
-	public String updateBbs(BbsVO b) {
+	public String updateBbs(@ModelAttribute BbsVO b) {
+		System.out.println(b);
 		return bbsMapper.updateBbs(b) + "";
 	}
 
 	@ResponseBody
 	@DeleteMapping("/bbs/delete")
-	public String deleteBbs(int num) {
+	public String deleteBbs(@RequestParam("num")int num) {
 		return bbsMapper.deleteBbs(num) + "";
 	}
 
-	@GetMapping("/bbs/page/{num}")
-	public String getUserListPage(@PathVariable int num, Model model) {
-		PageHelper.startPage(num, rows);
-		PageInfo<BbsVO> pageInfo = new PageInfo<>(bbsMapper.getBbsList());
-		
-		model.addAttribute("pageInfo", pageInfo);
-		
-		return "bbslist";
-	}
 	
 	@GetMapping("bbs/search/{sKey}/{sVal}/")
 	public String search(@PathVariable("sKey")String sKey, @PathVariable("sVal")String sVal, Model model) {
@@ -129,21 +160,20 @@ public class BbsController {
 			@RequestParam("author") String author, @RequestParam("title") String title,
 			@RequestParam("contents") String contents,
 			@RequestParam(value="pnum", required=false) int pnum) {
-		System.out.println("pnum: "+pnum);
+		//System.out.println("pnum: "+pnum);
 		ServletContext context = request.getServletContext();
 		String savePath = context.getRealPath("/WEB-INF/upload"); // upload폴더의 절대 경로를 얻음
 		BbsVO bb = new BbsVO(0, author, "", title, contents, 0, pnum);
 		
 		boolean isFail = false;
 		isFail = bbsMapper.writeBbs(bb);
-		
+		System.out.println("첨부파일 저장 실행..... ");
 		if (!mfiles[0].isEmpty()) {
 			try {
 				int getKey = bb.getNum();
 
 				for (int i = 0; i < mfiles.length; i++) {
-					System.out.println(mfiles[i].getContentType() + ", " + mfiles[i].getOriginalFilename() + ", "
-							+ mfiles[i].getResource());
+					// System.out.println(mfiles[i].getContentType() + ", " + mfiles[i].getOriginalFilename() + ", "+ mfiles[i].getResource());
 					mfiles[i].transferTo(new File(savePath + "/" + mfiles[i].getOriginalFilename())); // 디스크에 있었던 파일의
 																										// 정보를 메모리에 객체화
 					System.out.println("파일명: "+mfiles[i].getOriginalFilename());
@@ -185,4 +215,59 @@ public class BbsController {
 				.body(resource); // 바디에 들어갈 내용
 	}
 
+	
+	private void resort(ArrayList<BbsVO> list){		// 답글 형식으로 재정렬
+		// list는 bbs테이블의 num을 기준으로 역순으로 정렬되어있음
+		int rememberNum = 0;
+		for(int i = 0; i < list.size(); i++) {
+			if(list.get(i).getPnum()!=0) {
+				System.out.println("지금글 번호: "+list.get(i).getNum()+", 부모글: "+list.get(i).getPnum());
+				for(int j = i; j < list.size(); j++) {
+					if(list.get(i).getPnum()==list.get(j).getPnum() &&
+							list.get(i).getNum()!=list.get(j).getNum()) {
+						System.out.println(" --------동일 부모글인 글 만남("+list.get(i).getNum()+"의 자리바꿈 종료)");
+						break;
+					}else if(list.get(i).getPnum()>list.get(j).getNum()) {
+						System.out.println(" 다음글의 글 번호가 부모글 글번호보다 작음("+list.get(i).getNum()+"의 자리바꿈 종료)");
+						break;
+					}else {
+						System.out.println("----줄바꿈 실행----");
+						BbsVO tmp = new BbsVO();
+						tmp=list.get(j);
+						list.set(j,list.get(i));
+						list.set(i, tmp);
+					}
+				}
+			}
+		}
+//		for(int i = 0; i < list.size(); i++) {
+//			for(int j = 0; j < list.size(); j++) {
+//				if(list.get(i).getNum()==list.get(j).getPnum()) {
+//					// i는 부모항목, j 는 자식항목
+//					for(int k = j ; k < list.size(); k++) {
+//						if(list.get(j).getPnum()==list.get(k).getNum()) {
+//							BbsVO tmp = new BbsVO();
+//							tmp=list.get(k);
+//							list.set(k,list.get(j));				
+//							list.set(j, tmp);
+//							j=k--;
+//							System.out.println("부모글 번호와 상대위치:"+list.get(k).getNum()+","+k+", 답글:"+list.get(j).getNum()+","+j);
+//						}else if(list.get(j).getPnum()==list.get(k).getPnum()) {
+//							BbsVO tmp = new BbsVO();
+//							tmp=list.get(k);
+//							list.set(k,list.get(j));				
+//							list.set(j, tmp);
+//							j=k;
+//						}else {
+//							BbsVO tmp = new BbsVO();
+//							tmp=list.get(k);
+//							list.set(k,list.get(j));				
+//							list.set(j, tmp);
+//							j=k;
+//							}
+//						}
+//					}
+//				}
+//			}
+	}
 }
