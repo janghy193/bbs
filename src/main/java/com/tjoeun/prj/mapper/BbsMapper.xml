@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.tjoeun.prj.mapper.BbsMapper">
+<select id="selectByNum"
+         resultType="com.tjoeun.prj.vo.BbsVO"
+         parameterType="Integer">
+         SELECT num,author,wdate,title,contents,hit,pnum
+         FROM bbs
+         WHERE num=#{num}
+      </select>
+   
+   <select id="getBbsList" resultType="com.tjoeun.prj.vo.BbsVO">
+   	SELECT num,author,wdate,title,contents,hit,pnum
+      FROM bbs
+      ORDER BY num DESC
+   </select>
+   
+   <insert id="writeBbs" useGeneratedKeys="true" keyProperty="num"
+   parameterType="com.tjoeun.prj.vo.BbsVO">
+      INSERT INTO bbs
+      (
+      	author
+      	, wdate
+      	, title
+      	, contents
+      	, hit
+      	, pnum
+      ) VALUES(
+	      #{author}
+	      ,NOW()
+	      ,#{title}
+	      ,#{contents}
+	      ,NULL
+	      ,
+	      <choose>
+	      	<when test="pnum ==0">
+	      		NULL
+	      	</when>
+	      	<when test="pnum !=0">
+	      		#{pnum}
+	      	</when>
+	      </choose>
+      )
+   </insert>
+   
+   <insert id="updateBbs" 
+      parameterType="com.tjoeun.prj.vo.BbsVO">
+      
+      UPDATE bbs
+      SET title = #{title}, contents = #{contents}, hit=#{hit}
+      WHERE num=#{num}
+   </insert>
+   
+   <delete id="deleteBbs" parameterType="Integer">
+   DELETE FROM bbs 
+   WHERE num=#{num}
+   </delete>
+   
+   <select id = "search"
+   resultType="com.tjoeun.prj.vo.BbsVO">
+   SELECT num,author,wdate,title,contents,hit,pnum
+   FROM bbs
+   <where>
+   	<if test = "sKey.equals('num')"> num = #{sVal}
+   	</if>
+   	<if test = "sKey.equals('title')"> title REGEXP #{sVal}
+   	</if>
+   	<if test = "sKey.equals('author')"> author REGEXP #{sVal}
+   	</if>
+   	<if test = "sKey.equals('contents')"> contents REGEXP #{sVal}
+   	</if>
+   </where>
+   ORDER BY num DESC
+   </select>
+</mapper>
