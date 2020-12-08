@@ -79,12 +79,14 @@ $(function(){
 				data : formData,
 				dataType : 'text',
 				success : function(res) {
-					if (res.trim() == 'true') {
-						alert("글 게재 성공");
-						location.href = "/bbs/page/1";
-					} else {
+					if(res.trim() == 'false') {
 						alert("글 게재 오류 발생");
+					}else{
+						alert("글 게재 성공!");
+						location.href = "/bbs/page/"+res.trim();
 					}
+					
+						
 				}
 			})
 		}

@@ -45,7 +45,7 @@ public class BbsController {
 	@Autowired
 	ResourceLoader resourceLoader;
 	
-	@GetMapping("/bbs/read/{num}")
+	@GetMapping("/bbs/read/{num}")	// 글 상세 보기
 	public String selectByNum(@PathVariable("num") int num, Model model) {
 		ArrayList<AttachmentVO> attlist = attMapper.getFileList(num); 	// 첨부파일 리스트
 		BbsVO bb = bbsMapper.selectByNum(num);
@@ -54,7 +54,6 @@ public class BbsController {
 		bbsMapper.updateBbs(bb);
 		
 		ArrayList<BbsVO> list = bbsMapper.getBbsList();
-		resort(list);
 		int page = 0; // 현재 페이지 계산용
 		
 		BbsVO prev = new BbsVO(); // 이전페이지, 다음페이지 정보 저장
@@ -62,7 +61,8 @@ public class BbsController {
 		for(int i = 0 ; i < list.size() ; i++) {
 			if(list.get(i).getNum()==num) {
 				page = ((i+1) % rows == 0) ? ((i+1) / rows) : ((i+1) / rows + 1) ; // 현재 페이지 계산
-				if(i-1>0) {
+				
+				if(i>0) {
 					prev = list.get(i-1);	// 이전글 정보 저장
 				}
 				if(i+1<list.size()) {
@@ -70,7 +70,7 @@ public class BbsController {
 				}
 			}
 		}
-		
+
 		model.addAttribute("attlist",attlist);
 		model.addAttribute("bbs", bb);
 		model.addAttribute("page",page);
@@ -82,35 +82,31 @@ public class BbsController {
 
 	@GetMapping("/bbs")
 	public String getBbsList(Model model) {
-		PageHelper.startPage(1, rows);
 		ArrayList<BbsVO> list = bbsMapper.getBbsList();
-		resort(list);
-		
+		PageHelper.startPage(1, rows);
 		PageInfo<BbsVO> pageInfo = new PageInfo<>(list);
-		
+
 		model.addAttribute("pageInfo", pageInfo);
 		return "bbslist";
 	}
 
 	@GetMapping("/bbs/page/{num}")
 	public String getUserListPage(@PathVariable int num, Model model) {
-		PageHelper.startPage(num, rows);
+		PageHelper.startPage(num,rows);
 		ArrayList<BbsVO> list = bbsMapper.getBbsList();
-		resort(list);
-		
 		PageInfo<BbsVO> pageInfo = new PageInfo<>(list);
 		
 		model.addAttribute("pageInfo", pageInfo);
 		
 		return "bbslist";
 	}
-
+	
 	@GetMapping("/bbs/write")
 	public String writeBbs() {
 		return "bbswrite";
 	}
 	
-	@GetMapping("/bbs/rewrite/{pnum}")
+	@GetMapping("/bbs/rewrite/{pnum}")	// 답글작성
 	public String rewriteBbs(Model model,@PathVariable int pnum) {
 		model.addAttribute("pnum",pnum);
 		return "bbswrite";
@@ -167,28 +163,47 @@ public class BbsController {
 		
 		boolean isFail = false;
 		isFail = bbsMapper.writeBbs(bb);
-		System.out.println("첨부파일 저장 실행..... ");
-		if (!mfiles[0].isEmpty()) {
-			try {
-				int getKey = bb.getNum();
+		if(isFail) {
+			int getKey = bb.getNum();
+			if (!mfiles[0].isEmpty()) {
+				System.out.println("첨부파일 저장 실행..... ");
+				try {
 
-				for (int i = 0; i < mfiles.length; i++) {
-					// System.out.println(mfiles[i].getContentType() + ", " + mfiles[i].getOriginalFilename() + ", "+ mfiles[i].getResource());
-					mfiles[i].transferTo(new File(savePath + "/" + mfiles[i].getOriginalFilename())); // 디스크에 있었던 파일의
-																										// 정보를 메모리에 객체화
-					System.out.println("파일명: "+mfiles[i].getOriginalFilename());
-					AttachmentVO a = new AttachmentVO(0, getKey, mfiles[i].getOriginalFilename(), mfiles[i].getSize(),
+					for (int i = 0; i < mfiles.length; i++) {
+						// System.out.println(mfiles[i].getContentType() + ", " + mfiles[i].getOriginalFilename() + ", "+ mfiles[i].getResource());
+						mfiles[i].transferTo(new File(savePath + "/" + mfiles[i].getOriginalFilename())); // 디스크에 있었던 파일의
+																										  // 정보를 메모리에 객체화
+						System.out.println("파일명: "+mfiles[i].getOriginalFilename());
+						AttachmentVO a = new AttachmentVO(0, getKey, mfiles[i].getOriginalFilename(), mfiles[i].getSize(),
 							mfiles[i].getContentType());
-					isFail = attMapper.save(a);
+						isFail = attMapper.save(a);
+					}
+				
+					ArrayList<BbsVO> list = bbsMapper.getBbsList();
+					int page = 0; // 현재 페이지 계산용
+					for(int i = 0 ; i < list.size() ; i++) {
+						if(list.get(i).getNum()==getKey) {
+							page = ((i+1) % rows == 0) ? ((i+1) / rows) : ((i+1) / rows + 1) ; // 현재 페이지 계산
+						}
+					}
+					return page + "";
+				} catch (Exception e) {
+					e.printStackTrace();
+					isFail=false;
+					return isFail + "";
 				}
-				return isFail + "";
-			} catch (Exception e) {
-				e.printStackTrace();
-				isFail=false;
-				return isFail + "";
 			}
+			ArrayList<BbsVO> list = bbsMapper.getBbsList();
+
+			int page = 0; // 현재 페이지 계산용
+			for(int i = 0 ; i < list.size() ; i++) {
+				if(list.get(i).getNum()==getKey) {
+					page = ((i+1) % rows == 0) ? ((i+1) / rows) : ((i+1) / rows + 1) ; // 현재 페이지 계산
+				}
+			}
+			return page + "";
 		}
-		return isFail+"";
+		else return isFail+"";
 	}
 
 	@GetMapping("download/{filename}")
@@ -215,31 +230,40 @@ public class BbsController {
 				.body(resource); // 바디에 들어갈 내용
 	}
 
-	
+/*
 	private void resort(ArrayList<BbsVO> list){		// 답글 형식으로 재정렬
 		// list는 bbs테이블의 num을 기준으로 역순으로 정렬되어있음
-		int rememberNum = 0;
-		for(int i = 0; i < list.size(); i++) {
+		int size = list.size();
+		ArrayList<BbsVO> cList = new ArrayList<>();
+		ArrayList<BbsVO> pList = new ArrayList<>();
+		
+		for(int i = list.size()-1 ; i >= 0; i--) {
 			if(list.get(i).getPnum()!=0) {
-				System.out.println("지금글 번호: "+list.get(i).getNum()+", 부모글: "+list.get(i).getPnum());
-				for(int j = i; j < list.size(); j++) {
-					if(list.get(i).getPnum()==list.get(j).getPnum() &&
-							list.get(i).getNum()!=list.get(j).getNum()) {
-						System.out.println(" --------동일 부모글인 글 만남("+list.get(i).getNum()+"의 자리바꿈 종료)");
-						break;
-					}else if(list.get(i).getPnum()>list.get(j).getNum()) {
-						System.out.println(" 다음글의 글 번호가 부모글 글번호보다 작음("+list.get(i).getNum()+"의 자리바꿈 종료)");
-						break;
+				cList.add(list.get(i));
+				list.remove(i);
+			}else {
+				pList.add(list.get(i));
+				list.remove(i);
+			}
+		}
+		
+		for(int i = 0 ; i < pList.size() ; i++) {
+			for(int j = 0 ; j < cList.size(); j++) {
+				if(pList.get(i).getNum()==cList.get(j).getPnum()) {
+					if(list.contains(pList.get(i))) {
+						list.add(cList.get(j));
 					}else {
-						System.out.println("----줄바꿈 실행----");
-						BbsVO tmp = new BbsVO();
-						tmp=list.get(j);
-						list.set(j,list.get(i));
-						list.set(i, tmp);
+						list.add(pList.get(i));
+						list.add(cList.get(j));
+					}
+				} else {
+					if(!list.contains(pList.get(i))) {
+						list.add(pList.get(i));
 					}
 				}
 			}
 		}
+		
 //		for(int i = 0; i < list.size(); i++) {
 //			for(int j = 0; j < list.size(); j++) {
 //				if(list.get(i).getNum()==list.get(j).getPnum()) {
@@ -270,4 +294,5 @@ public class BbsController {
 //				}
 //			}
 	}
+	*/
 }

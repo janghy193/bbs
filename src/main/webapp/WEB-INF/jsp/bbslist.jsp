@@ -29,7 +29,7 @@ right:0px;
 #search{
 text-align:center;
 }
-#snum{
+.notImp{
 color:gray;
 font-size:small;
 }
@@ -46,7 +46,7 @@ font-size:small;
 	
 </script>
 <script>
-function writePage(){
+function writePage(num){
 	location.href="/bbs/write";
 }
 
@@ -61,18 +61,19 @@ function search(){
 </head>
 <body>
 <br>
+
 <div class="container">
 	<table class="table">
 		<tr class="thead-dark"><th></th><th>글번호</th><th class = "subj">제목</th><th>작성자</th><th>작성일</th><th>조회수</th></tr>
 		<c:forEach var="b" items="${pageInfo.list}" varStatus="status">
 		<c:if test="${b.pnum==0}">
-			<tr><td id = "snum">${status.count}</td><td>${b.num}</td>
+			<tr><td class = "notImp">${status.count}</td><td>${b.num}</td>
 			<td class="subj"><a href="/bbs/read/${b.num}">${b.title}</a></td>
 			<td>${b.author}</td><td>${b.wdate}</td><td>${b.hit}</td></tr>
 		</c:if>
 		<c:if test="${b.pnum!=0}">
-			<tr><td id = "snum">${status.count}</td><td></td>
-			<td class = "subj">ㄴ<a href="/bbs/read/${b.num}" id = "tLink">${b.title}</a></td>
+			<tr><td class = "notImp">${status.count}</td><td class = "notImp">답글</td>
+			<td class = "subj"><a href="/bbs/read/${b.num}" id = "tLink">${b.title}</a></td>
 			<td>${b.author}</td><td>${b.wdate}</td><td>${b.hit}</td></tr>
 		</c:if>
 		</c:forEach>
@@ -106,7 +107,7 @@ function search(){
 	<input id="searchVal" type = "search">
 	<button class="btn btn-dark" onclick="search()" for="searchVal">검색</button></p>
 	
-	<p><button class="btn btn-dark" onclick="writePage()">글쓰기</button></p>
+	<p><button class="btn btn-dark" onclick="writePage(${pageInfo.pageNum})">글쓰기</button></p>
 </div>
 </body>
 </html>
