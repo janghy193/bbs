@@ -5,8 +5,6 @@
   
 <mapper namespace="com.tjoeun.prj.mapper.BbsMapper">
 
-
-
 <sql id="bbsColumns">
 	author
 	,wdate
@@ -16,7 +14,6 @@
 	,pnum
 </sql>
 
-
 <select id="selectByNum"
          resultType="com.tjoeun.prj.vo.BbsVO">
          SELECT num,
@@ -25,28 +22,30 @@
          WHERE num=#{num}
       </select>
    
-   <select id="getBbsList" resultType="com.tjoeun.prj.vo.BbsVO">
+<select id="getBbsList" resultType="com.tjoeun.prj.vo.BbsVO">
    
-WITH RECURSIVE tmp1 AS
-(
-	SELECT num, author, wdate, title, contents, hit, pnum
-    ,num AS grpno
-    , CONCAT(REPEAT('0',(6-CHAR_LENGTH(CAST(num AS CHAR(30))))),CAST(num AS CHAR(30))) path
-    , 0 AS lvl
-	FROM bbs WHERE pnum IS NULL
-	UNION
-	SELECT b.num, b.author, b.wdate, b.title, b.contents, b.hit, b.pnum
-    , t.grpno
-    ,CONCAT(t.path,',',CONCAT(REPEAT('0',(6-CHAR_LENGTH(CAST(b.num AS CHAR(30))))),CAST(b.num AS CHAR(30)))) AS path
-    , t.lvl+1 AS lvl
-	FROM tmp1 t JOIN bbs b ON t.num=b.pnum
-)
-SELECT num, author, wdate, CONCAT(REPEAT(' ㄴ', lvl),title) 'title', contents, pnum, path, lvl, hit,grpno
-FROM tmp1
-ORDER BY grpno desc, path
+	WITH RECURSIVE tmp1 AS
+	(
+		SELECT num, author, wdate, title, contents, hit, pnum
+	    ,num AS grpno
+	    , CONCAT(REPEAT('0',(6-CHAR_LENGTH(CAST(num AS CHAR(30))))),CAST(num AS CHAR(30))) path
+	    , 0 AS lvl
+		FROM bbs WHERE pnum IS NULL
+		
+		UNION
+		
+		SELECT b.num, b.author, b.wdate, b.title, b.contents, b.hit, b.pnum
+	    , t.grpno
+	    ,CONCAT(t.path,',',CONCAT(REPEAT('0',(6-CHAR_LENGTH(CAST(b.num AS CHAR(30))))),CAST(b.num AS CHAR(30)))) AS path
+	    , t.lvl+1 AS lvl
+		FROM tmp1 t JOIN bbs b ON t.num=b.pnum
+	)
+	SELECT num, author, wdate, CONCAT(REPEAT('ㅤ', lvl*2),title) 'title', contents, pnum, path, lvl, hit,grpno
+	FROM tmp1
+	ORDER BY grpno desc, path asc
 
-   </select>
-   
+</select>
+
    <insert id="writeBbs" useGeneratedKeys="true" keyProperty="num"
    parameterType="com.tjoeun.prj.vo.BbsVO">
       INSERT INTO bbs

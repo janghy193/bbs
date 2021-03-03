@@ -67,18 +67,21 @@ function search(){
 		<tr class="thead-dark"><th></th><th>글번호</th><th class = "subj">제목</th><th>작성자</th><th>작성일</th><th>조회수</th></tr>
 		<c:forEach var="b" items="${pageInfo.list}" varStatus="status">
 		<c:if test="${b.pnum==0}">
-			<tr><td class = "notImp">${status.count}</td><td>${b.num}</td>
+			<tr>
+			<td class = "notImp">${status.count}</td><td>${b.num}</td>
 			<td class="subj"><a href="/bbs/read/${b.num}">${b.title}</a></td>
 			<td>${b.author}</td><td>${b.wdate}</td><td>${b.hit}</td></tr>
 		</c:if>
 		<c:if test="${b.pnum!=0}">
-			<tr><td class = "notImp">${status.count}</td><td class = "notImp">답글</td>
+			<tr>
+			<td class = "notImp">${status.count}</td><td class = "notImp">답글</td>
 			<td class = "subj"><a href="/bbs/read/${b.num}" id = "tLink">${b.title}</a></td>
 			<td>${b.author}</td><td>${b.wdate}</td><td>${b.hit}</td></tr>
 		</c:if>
 		</c:forEach>
 		<c:forEach var="b" items="${list}">
-		<tr><td><a href="/bbs/read/${b.num}">${b.num}</a></td>
+		<tr>
+		<td><a href="/bbs/read/${b.num}">${b.num}</a></td>
 		<td><a href="/bbs/read/${b.num}" id = "tLink">${b.title}</a></td>
 		<td><a href="/bbs/search/author/${b.author}/">{b.author}</a></td><td>${b.wdate}</td><td>${b.hit}</td></tr></a>
 		</c:forEach>			

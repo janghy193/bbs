@@ -82,8 +82,8 @@ public class BbsController {
 
 	@GetMapping("/bbs")
 	public String getBbsList(Model model) {
-		ArrayList<BbsVO> list = bbsMapper.getBbsList();
 		PageHelper.startPage(1, rows);
+		ArrayList<BbsVO> list = bbsMapper.getBbsList();
 		PageInfo<BbsVO> pageInfo = new PageInfo<>(list);
 
 		model.addAttribute("pageInfo", pageInfo);
@@ -115,7 +115,7 @@ public class BbsController {
 	@ResponseBody
 	@PutMapping("/bbs/upd")
 	public String updateBbs(@ModelAttribute BbsVO b) {
-		System.out.println(b);
+		b.setHit(bbsMapper.selectByNum(b.getNum()).getHit());
 		return bbsMapper.updateBbs(b) + "";
 	}
 
