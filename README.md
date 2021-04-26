@@ -4,7 +4,7 @@ MySQL로 구현한 게시물, 첨부파일 테이블과 연동되는 게시판�
 
 java Spring Framework와 Mybatis를 이용해 백엔드를 구성했으며 프론트엔드는 BootStrap을 이용하여 구성했습니다.
 
-<주요 기능>
+<b><주요 기능></b>
 
 1. 게시물의 CRUD(Create, Read, Update, Delete) 기능
 2. 게시물 페이지네이션
