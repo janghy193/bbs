@@ -102,17 +102,18 @@ $(function(){
 			<output id="pnum_label"></output>
 			<input id="pnum" name="pnum" type="hidden" value="0"></input>
 			<span class="titles"><label for="title">제목</label>
-			<input id="title" name="title" tabindex = "1"></span> <span class="authors">
-			<label for="author">작성자</label><input id="author" name="author" tabindex = "2"></span>
+			<input id="title" name="title"></span> <span class="authors">
+			<label for="author">작성자</label><input id="author" name="author"></span>
 			
 			<br>
-			<textarea class="form-control" id="contents" name="contents" tabindex = "3"></textarea><br> 
+			<textarea class="form-control" id="contents" name="contents"></textarea><br> 
 			<label for="files">첨부파일</label> 
 			<input type="file" id="files" name="files" multiple="multiple"><br>
 		</form>
 		<p>
-			<a class="btn btn-dark" href="javascript:write()" tabindex = "4">작성</a>
-			<button class="btn btn-secondary" onclick="back()" tabindex = "5">취소</button>
+			<a class="btn btn-light" href="/bbs/page/1">목록보기</a>
+			<a class="btn btn-dark" href="javascript:write()">작성</a>
+			<button class="btn btn-secondary" onclick="back()">취소</button>
 		</p>
 	</div>
 </body>

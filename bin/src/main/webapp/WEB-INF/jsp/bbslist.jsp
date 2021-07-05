@@ -57,13 +57,6 @@ function search(){
 		location.href="/bbs/search/"+$("#searchKey").val()+"/"+$("#searchVal").val()+"/";	
 	}
 }
-
-function enterkey(){
-	if (window.event.keyCode == 13){
-		// 엔터키 눌렸을 시
-		search();
-	}
-}
 </script>
 </head>
 <body>
@@ -114,13 +107,10 @@ function enterkey(){
 		<option value="author">작성자명</option>
 		<option value="num">글번호</option>
 	</select>
-	
-	<!--  onkeyup, onkeydown, onkeypress -->
-	<input id="searchVal" type = "search" onkeyup="enterkey();">
+	<input id="searchVal" type = "search">
 	<button class="btn btn-dark" onclick="search()" for="searchVal">검색</button></p>
-	<p>
 	
-	<button class="btn btn-dark" onclick="writePage(${pageInfo.pageNum})">글쓰기</button></p>
+	<p><button class="btn btn-dark" onclick="writePage(${pageInfo.pageNum})">글쓰기</button></p>
 </div>
 </body>
 </html>

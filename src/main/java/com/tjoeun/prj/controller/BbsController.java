@@ -94,6 +94,7 @@ public class BbsController {
 	public String getUserListPage(@PathVariable int num, Model model) {
 		PageHelper.startPage(num,rows);
 		ArrayList<BbsVO> list = bbsMapper.getBbsList();
+		
 		PageInfo<BbsVO> pageInfo = new PageInfo<>(list);
 		
 		model.addAttribute("pageInfo", pageInfo);
@@ -159,6 +160,7 @@ public class BbsController {
 		//System.out.println("pnum: "+pnum);
 		ServletContext context = request.getServletContext();
 		String savePath = context.getRealPath("/WEB-INF/upload"); // upload폴더의 절대 경로를 얻음
+		// System.out.println("Author:" + author + "\ntitle: " + title + "\ncontent:\n " + contents + "\npnum: " + Integer.toString(pnum));
 		BbsVO bb = new BbsVO(0, author, "", title, contents, 0, pnum);
 		
 		boolean isFail = false;

@@ -5,7 +5,7 @@
     </encoder>
   </appender>
   
-  
+  <!--
   <logger name="jdbc" level="OFF"/>
   <logger name="jdbc.sqlonly" level="OFF"/>
   <logger name="jdbc.sqltiming" level="DEBUG"/>
@@ -16,6 +16,6 @@
   <root level="INFO">
     <appender-ref ref="STDOUT" />
   </root>
-  <!---->
+  -->
   
 </configuration>
